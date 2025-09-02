@@ -16,7 +16,7 @@ class Actions(Enum):
 class GridWorldEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
 
-    def __init__(self, render_mode=None, size=5):
+    def __init__(self, render_mode=None, size=2):
         self.size = size  # The size of the square grid
         self.window_size = 512  # The size of the PyGame window
 
@@ -181,7 +181,3 @@ class GridWorldEnv(gym.Env):
             pygame.display.quit()
             pygame.quit()
             
-register(
-    id="gymnasium_env/GridWorld-v0",
-    entry_point="gymnasium_env.envs:GridWorldEnv",
-)

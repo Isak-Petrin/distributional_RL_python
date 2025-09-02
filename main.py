@@ -1,4 +1,6 @@
 import gymnasium as gym
+import sys
+print(sys.executable)
 import gymnasium_env
 import numpy as np
 from QlearningAgent import QLearningAgent
@@ -13,7 +15,7 @@ start_epsilon = 1.0         # Start with 100% random actions
 epsilon_decay = start_epsilon / (n_episodes / 2)  # Reduce exploration over time
 final_epsilon = 0.1         # Always keep some exploration
 
-env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
+env = gym.wrappers.RecordEpisodeStatistics(env)
 
 agent = QLearningAgent(
     env=env,

@@ -3,6 +3,7 @@ import gymnasium as gym
 from gymnasium import spaces
 import pygame
 import numpy as np
+from gymnasium.envs.registration import register
 
 
 class Actions(Enum):
@@ -179,3 +180,8 @@ class GridWorldEnv(gym.Env):
         if self.window is not None:
             pygame.display.quit()
             pygame.quit()
+            
+register(
+    id="gymnasium_env/GridWorld-v0",
+    entry_point="gymnasium_env.envs:GridWorldEnv",
+)

@@ -47,4 +47,10 @@ for episode in tqdm(range(n_episodes)):
 
     # Reduce exploration rate (agent becomes less random over time)
     agent.decay_epsilon()
-print("Hej")
+
+def plot_episode_length(episode_lengths):
+    l = len(env.episode_lengths)
+    x = np.linspace(1,l,l)
+    plt.plot(x,env.episode_lengths)
+
+plot_episode_length(env.episode_lengths)

@@ -1,6 +1,6 @@
-numpy==2.0
-pandas==2.2.2
-matplotlib==3.9.2
-gymnasium==1.2.0
-pygame
+numpy < 2.0
+pandas
+matplotlib
+gymnasium
 tqdm
+pip

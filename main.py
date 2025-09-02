@@ -2,7 +2,7 @@ import gymnasium as gym
 import gymnasium_env
 import numpy as np
 from QlearningAgent import QLearningAgent
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 #env = gym.make("gymnasium_env/GridWorld-v0",render_mode = "human")
 env = gym.make("gymnasium_env/GridWorld-v0")

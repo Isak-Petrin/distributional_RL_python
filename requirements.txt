@@ -1,10 +1,5 @@
-# create a virtual environment
-python3 -m venv .venv
-source .venv/bin/activate   # Linux/Mac
-# .venv\Scripts\activate    # Windows
-
-# install packages
-pip install numpy gymnasium # etc.
-
-# freeze dependencies
-pip freeze > requirements.txt
+numpy==1.26.4
+pandas==2.2.2
+matplotlib==3.9.2
+gymnasium==1.2.0
+pygame

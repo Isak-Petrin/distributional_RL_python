@@ -80,7 +80,7 @@ class CustomGridEnv(Env):
         # parse options
         if options == None:
             self.start_xy = (0,0)
-            self.goal_xy = (3,3)
+            self.goal_xy = (7,7)
         else:
             self.start_xy = options['start']
             self.goal_xy = options['goal']

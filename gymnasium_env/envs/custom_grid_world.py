@@ -41,21 +41,24 @@ class CustomGridEnv(Env):
       self.obstacles = self.parse_obstacle_map(obstacle_map) #walls
       self.nrow, self.ncol = self.obstacles.shape
       
-      self._action_space = spaces.Discrete(len(self.MOVES))
-      self._observation_space = spaces.Dict(
+      self.action_space = spaces.Discrete(len(self.MOVES))
+      self.observation_space = spaces.Dict(
           
             {
                 "agent": spaces.Box(0, len(obstacle_map) - 1, shape=(2,), dtype=int),
+                "target": spaces.Box(0, len(obstacle_map) - 1, shape=(2,), dtype=int),
+                
             }
             
             )
+      self._observation_space = self.observation_space
   
       # Rendering variables
       self.fig = None
       self.render_mode = render_mode
       self.fps = self.metadata['render_fps']
       
-    def _get_obs(self): return self._observation_space
+    def _get_obs(self): return {"agent": self.agent_xy, "target": self.goal_xy}
     def _get_info(self): return {'position': self.agent_xy}
 
     
@@ -75,8 +78,12 @@ class CustomGridEnv(Env):
         super().reset(seed=seed)
 
         # parse options
-        self.start_xy = options['start']
-        self.goal_xy = options['goal']
+        if options == None:
+            self.start_xy = (0,0)
+            self.goal_xy = (3,3)
+        else:
+            self.start_xy = options['start']
+            self.goal_xy = options['goal']
 
         # initialise internal vars
         self.agent_xy = self.start_xy
@@ -107,6 +114,15 @@ class CustomGridEnv(Env):
         if self._observation_space['agent'].contains(np.array([target_x, target_y])) and not self.obstacles[target_x, target_y]:
             self.agent_xy = (target_x,target_y)
             self.done = self.on_goal()
+        elif self._observation_space['agent'].contains(np.array([target_x, target_y])) and self.obstacles[target_x, target_y]:
+             
+             self.agent_xy = (target_x,target_y)
+             self.reward = -1
+             self.done = True
+             self.n_iter += 1
+             return self._get_obs(), self.reward, self.done, False, self._get_info()
+             
+        
         self.n_iter += 1
         
         return self._get_obs(), self.reward, self.done, False, self._get_info()

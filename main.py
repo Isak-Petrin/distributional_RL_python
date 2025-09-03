@@ -5,18 +5,33 @@ import numpy as np
 from QlearningAgent import QLearningAgent
 import matplotlib.pyplot as plt
 
+MAPS = {
+    "4x4": ["0000", "0101", "0001", "1000"],
+    "8x8": [
+        "00000000",
+        "00000000",
+        "00010000",
+        "00000100",
+        "00010000",
+        "01100010",
+        "01001010",
+        "00010000",
+    ],
+}
+
 
 #env = gym.make("gymnasium_env/GridWorld-v0",render_mode = "human")
-env = gym.make("gymnasium_env/GridWorld-v0")
-grid_env = gym.make("gymnasium_env/custom_grid_world")
+#env = gym.make("gymnasium_env/GridWorld-v0")
+
+grid_env = gym.make("gymnasium_env/custom_grid_world", obstacle_map=MAPS['8x8'])
 # Training hyperparameters
 learning_rate = 0.01        # How fast to learn (higher = faster but less stable)
-n_episodes = 1000        # Number of hands to practice
+n_episodes = 10000        # Number of hands to practice
 start_epsilon = 1.0         # Start with 100% random actions
 epsilon_decay = start_epsilon / (n_episodes / 2)  # Reduce exploration over time
 final_epsilon = 0.1         # Always keep some exploration
 
-env = gym.wrappers.RecordEpisodeStatistics(env=env, buffer_length=n_episodes)
+env = gym.wrappers.RecordEpisodeStatistics(env=grid_env, buffer_length=n_episodes)
 
 agent = QLearningAgent(
     env=grid_env,

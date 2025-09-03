@@ -16,10 +16,10 @@ class ToyEnv(gym.Env):
             self.gamma = 0.9
             
             self.ps = 0.1
-            self.rs = 0.5
+            self.rs = np.random.normal(loc = 2, scale = 10)
             
             self.pr = 0.5
-            self.rr = 1
+            self.rr = np.random.normal(loc = -1, scale = 2)
         #0 = not risky, 1 = risky
         self.observation_space = gym.spaces.Discrete(2)
         self.action_space = gym.spaces.Discrete(2)

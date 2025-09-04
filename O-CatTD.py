@@ -73,8 +73,8 @@ class O_CatTD:
                         
 toy_env = gym.make("gymnasium_env/toy_example")
                         
-catTD = O_CatTD(env = toy_env, alpha = 0.05,theta_range=[-5,5],resolution=50, policy = 1, gamma=0.95)
-catTD.learn_distribution(100)
+catTD = O_CatTD(env = toy_env, alpha = 0.05,theta_range=[0,20],resolution=100, policy = 0, gamma=0.95)
+catTD.learn_distribution(10000)
 
 x = catTD.theta_lst
 y = catTD.p[0]

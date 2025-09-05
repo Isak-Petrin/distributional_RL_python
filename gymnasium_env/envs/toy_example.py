@@ -18,8 +18,8 @@ class ToyEnv(gym.Env):
             self.ps = 0.1
             self.rs = 0.5
             
-            self.pr = 0.5
-            self.rr = 1
+            self.pr = 0.05
+            self.rr = 0.5
         #0 = not risky, 1 = risky
         self.observation_space = gym.spaces.Discrete(2)
         self.action_space = gym.spaces.Discrete(2)

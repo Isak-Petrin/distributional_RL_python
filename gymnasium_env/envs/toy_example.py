@@ -16,10 +16,10 @@ class ToyEnv(gym.Env):
             self.gamma = 0.9
             
             self.ps = 0.1
-            self.rs = 0.5
+            self.rs = 1
             
-            self.pr = 0.05
-            self.rr = 0.5
+            self.pr = 0.85
+            self.rr = 1
         #0 = not risky, 1 = risky
         self.observation_space = gym.spaces.Discrete(2)
         self.action_space = gym.spaces.Discrete(2)
@@ -54,12 +54,8 @@ class ToyEnv(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
         
-        return observation, self.reward, self.done, False, info 
-        
-        
-            
-        
-        
+        return observation, self.reward, self.done, False, info
+    
         
         
         

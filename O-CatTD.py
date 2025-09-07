@@ -80,17 +80,17 @@ class O_CatTD:
                         
 toy_env = gym.make("gymnasium_env/toy_example")
                         
-catTD = O_CatTD(env = toy_env, alpha = 0.05,theta_range=[1,6],resolution = 6, policy = 1, gamma=0.95)
-catTD.learn_distribution(51)
+catTD = O_CatTD(env = toy_env, alpha = 0.05,theta_range=[1,10],resolution = 10, policy = 1, gamma=0.95)
+catTD.learn_distribution(1001)
 
-def geometric(k,p = 0.85):
+def geometric(k,p = .5):
     return 1*((1-p)**(k-1) * p)
     
 
 x = catTD.theta_lst
 y1 = catTD.plot_lst[0][0]
 y3 = catTD.plot_lst[10][0]
-y4 = catTD.plot_lst[50][0]
+y4 = catTD.plot_lst[1000][0]
 
 geo = geometric(x)  # reference geometric distribution
 

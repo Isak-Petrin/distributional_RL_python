@@ -15,10 +15,10 @@ class ToyEnv(gym.Env):
         if param == None:
             self.gamma = 0.9
             
-            self.ps = 0.1
+            self.ps = 0.5
             self.rs = 1
             
-            self.pr = 0.85
+            self.pr = 0.5
             self.rr = 1
         #0 = not risky, 1 = risky
         self.observation_space = gym.spaces.Discrete(2)

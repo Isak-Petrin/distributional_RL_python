@@ -81,7 +81,7 @@ class O_CatTD:
 toy_env = gym.make("gymnasium_env/toy_example")
                         
 catTD = O_CatTD(env = toy_env, alpha = 0.05,theta_range=[1,10],resolution = 10, policy = 1, gamma=0.95)
-catTD.learn_distribution(1001)
+catTD.learn_distribution(10001)
 
 def geometric(k,p = .5):
     return 1*((1-p)**(k-1) * p)
@@ -90,25 +90,28 @@ def geometric(k,p = .5):
 x = catTD.theta_lst
 y1 = catTD.plot_lst[0][0]
 y3 = catTD.plot_lst[10][0]
-y4 = catTD.plot_lst[1000][0]
+y4 = catTD.plot_lst[10000][0]
+
+diff = np.diff(x)[0]
 
 geo = geometric(x)  # reference geometric distribution
 
 fig, axs = plt.subplots(3, 1, figsize=(8, 10))  # 3 rows, 1 column
 
-axs[0].plot(x, y1, label="Episode 0")
-axs[0].plot(x, geo, label="Geometric(x)", linestyle="--")
-axs[0].set_title("Distribution at Episode 0")
+axs[0].bar(x, y1, width = diff, label="Episode 1", alpha = 0.6)
+axs[0].bar(x, geo, width = diff, label="Geometric(x)", alpha = 0.6)
+axs[0].set_title("Distribution at Episode 1")
 axs[0].legend()
 
-axs[1].plot(x, y3, label="Episode 25")
-axs[1].plot(x, geo, label="Geometric(x)", linestyle="--")
-axs[1].set_title("Distribution at Episode 25")
+axs[1].bar(x, y3, width = diff, label="Episode 10", alpha = 0.6)
+axs[1].bar(x, geo, width = diff, label="Geometric(x)", alpha = 0.6)
+axs[1].set_title("Distribution at Episode 10")
 axs[1].legend()
+#axs[2].plot(x, y4, label="Episode 50")
 
-axs[2].plot(x, y4, label="Episode 50")
-axs[2].plot(x, geo, label="Geometric(x)", linestyle="--")
-axs[2].set_title("Distribution at Episode 50")
+axs[2].bar(x, y4, width = diff, label="Episode 10000", alpha = 0.6)
+axs[2].bar(x, geo, width = diff, label="Geometric(x)", alpha = 0.6)
+axs[2].set_title("Distribution at Episode 10000")
 axs[2].legend()
 
 plt.tight_layout()

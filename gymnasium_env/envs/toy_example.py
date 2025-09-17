@@ -15,7 +15,7 @@ class ToyEnv(gym.Env):
         if param == None:
             self.gamma = 0.9
             
-            self.ps = 0.5
+            self.ps = 0.3
             self.rs = 1
             
             self.pr = 0.5

@@ -2,10 +2,11 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+from scipy.signal import savgol_filter
 class quantile:
     def __init__(self, m: int):
         self.m = m
-        self.theta = np.linspace(0,2,self.m)
+        self.theta = np.linspace(-2,-1,self.m)
     
     def get_theta(self):
         return self.theta
@@ -13,6 +14,10 @@ class quantile:
         self.theta = theta
     def add_theta(self, diff):
         self.theta += diff
+    def sample(self):
+        return np.random.choice(self.theta)
+    def mean(self):
+        return np.mean(self.theta)
 
 class container:
     def __init__(self, x0):
@@ -44,21 +49,25 @@ class container:
     
     
 class QRTDlAgent:
-    def __init__(self, m: int, l: float ,obs_space: int, gamma: float, alpha: float, x0):
+    def __init__(self, m: int, l: float ,obs_space: int, gamma: float, alpha: float, x0, bootstrap: bool):
         self.m = m
         self.l = l
+        self.bootstrap = bootstrap
         self.q = {x: quantile(m = self.m) for x in range(obs_space)}
         self.tau = np.asarray([(2*i - 1) / (2*self.m) for i in range(1,self.m+1)])
         self.gamma = gamma
-        self.alpha0 = alpha
+        self.N = {x: 0 for x in range(obs_space)}
         self.container = container(x0=x0)
         self.trace = lambda s: (1 - self.l) * self.l**(s - 1)
         self.t = 0
+        self.alpha0 = alpha
         self.episode = 0
         
     def reset(self,x0):
         self.t = 0
         self.container.reset(x0)
+    def get_mean(self,x):
+        return self.q[x].mean()
     
     def get_ds(self,t):
         return self.container.get_d(t)
@@ -70,7 +79,7 @@ class QRTDlAgent:
         return x,self.q[x].get_theta()
     
     def current_alpha(self):
-        return np.exp(-self.episode * 1e-3)
+        return np.exp(-self.episode * 1e-4)
     
     def get_theta(self, x):
         return self.q[x].get_theta()
@@ -97,12 +106,18 @@ class QRTDlAgent:
             h = self.t - i
             target = self.get_target(t = i, h = h)
             x,theta = self.get_xt(t = i)
+            self.N[x] += 1
+            alpha_t = self.alpha0 / np.sqrt(self.N[x] + 1e-8)
             trc = self.trace(s = h)
             grad = np.zeros(self.m)
             alpha = self.current_alpha()
-            for i in range(self.m):
-                for j in range(self.m):
-                    grad[i] += (self.alpha0/self.m) * trc * (self.tau[i] - (target[j] < theta[i]))
+            if self.bootstrap:
+                less = (target < theta)      
+                grad = self.m * alpha_t * trc * (self.tau - less)
+            else:
+                less = target[None, :] < theta[:, None]  
+                counts = less.sum(axis=1)                
+                grad = (alpha_t / self.m) * trc * (self.m * self.tau - counts)
             self.add_diff(x = x, diff = grad)
             self.project_monotone(x)
             
@@ -110,55 +125,86 @@ class QRTDlAgent:
     def get_target(self, t,h):
         rs = self.container.get_rs()
         xb = self.container.get_x(t = t+h)
-        target = np.zeros(self.m)
-        for i,k in enumerate(range(t,t+h)):
-            target += self.gamma**i * np.ones(self.m) * rs[k]
-            if self.get_ds(t = k) == True:
-                return target
-        return target + self.get_theta(xb) * self.gamma**h
+        if self.bootstrap:
+            target = 0
+            for i,k in enumerate(range(t,t+h)):
+                target += self.gamma**i * rs[k]
+                if self.get_ds(t = k) == True:
+                    return target
+            return target + self.q[xb].sample() * self.gamma**h
+        else:
+            target = np.zeros(self.m)
+            for i,k in enumerate(range(t,t+h)):
+                target += self.gamma**i * np.ones(self.m) * rs[k]
+                if self.get_ds(t = k) == True:
+                    return target
+            return target + self.get_theta(xb) * self.gamma**h
 step = 10000
 gamma = 1
-s = np.random.normal(size=step) * gamma**3
-m = 15
+alpha = 0.1
+length = 8
+bootstrap = True
+s = np.random.normal(size=step) * gamma**(length-1)
+m = 3
 taus = [(2*i - 1) / (2*m) for i in range(1,m+1)]
 emp = [np.quantile(s, tau) for tau in taus]
 
-loss_historyTD = []
-loss_historyMC = []
+
 x0 = 0
-agnt1 = QRTDlAgent(m = 15,obs_space=5,l = .1 ,gamma = 1, alpha = 0.05, x0 = x0)
-agnt2 = QRTDlAgent(m = 15,obs_space=5,l = .9 ,gamma = 1, alpha = 0.05, x0 = x0)
+agent1 = QRTDlAgent(m = m,obs_space=length,l = .2 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+agent2 = QRTDlAgent(m = m,obs_space=length,l = .4 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+agent3 = QRTDlAgent(m = m,obs_space=length,l = .5 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+agent4 = QRTDlAgent(m = m,obs_space=length,l = .6 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+agent5 = QRTDlAgent(m = m,obs_space=length,l = .8 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+
+
+agent_lst = [agent1,agent2,agent3,agent4,agent5]
+
+loss_lst = {agent: [] for agent in agent_lst}
+mean_lst = {agent: [] for agent in agent_lst}
+
+fig,axs = plt.subplots(1,2,figsize = (30,10))
 
 for episode in tqdm(range(step)):
 
     r = np.random.normal()
-    obs_lst = [(1,0,False), (2,0,False),(3,0,False),(4,s[episode],True)]
+    obs_lst = [(i+1,r if (i + 1) == (length - 1) else 0, (i+1) == (length - 1)) for i in range(length-1)]
 
     for obs in obs_lst:
         x,r,done = obs
-        agnt1.update(x = x, r = r, done = done)
-        agnt2.update(x = x, r = r, done = done)
-        if done == True:
-            agnt1.reset(x0 = x0)
-            agnt2.reset(x0 = x0)
-            agnt1.episode += 1
-            agnt2.episode += 1
-            
+
+        for agent in agent_lst:
+          agent.update(x = x, r = r, done = done)
+          if done == True:
+            agent.reset(x0 = x0)
+            agent.episode += 1
+
     
-    est = agnt1.get_theta(x = 0)
-    u = emp-est
-    rho = u * (taus - (u < 0))
-    total_loss = np.sum(rho)
-    loss_historyTD.append(total_loss)
-    
-    est = agnt2.get_theta(x = 0)
-    u = emp-est
-    rho = u * (taus - (u < 0))
-    total_loss = np.sum(rho)
-    loss_historyMC.append(total_loss)
-           
-plt.plot(range(step),loss_historyTD,label = r'$\lambda$ = 0.1')
-plt.plot(range(step),loss_historyMC,label = r'$\lambda$ = 0.9')
-plt.xscale('log')
-plt.legend()
+    for agent in agent_lst:
+      est = agent.get_theta(x = 0)
+      u = emp-est
+      rho = u * (taus - (u < 0))
+      total_loss = np.sum(rho)
+      loss_lst[agent].append(total_loss)
+      mean_lst[agent].append(agent.get_mean(x = 0))  
+
+for agent in agent_lst:            
+    axs[0].plot(range(step), loss_lst[agent], label=f'$\lambda$ = {agent.l}')
+    axs[1].plot(range(step), mean_lst[agent], label=f'$\lambda$ = {agent.l}')
+
+axs[0].set_xscale('log')
+axs[1].set_xscale('log')
+
+axs[0].set_title('Quantile Regression Loss')
+axs[1].set_title('Estimated Mean of Quantiles')
+
+axs[0].set_xlabel('Step')
+axs[1].set_xlabel('Step')
+axs[0].set_ylabel('Loss')
+axs[1].set_ylabel('Mean')
+
+axs[0].legend()
+axs[1].legend()
+
+plt.tight_layout()
 plt.show()

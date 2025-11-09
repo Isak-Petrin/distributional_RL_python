@@ -14,3 +14,8 @@ register(
     id="gymnasium_env/toy_example",
     entry_point="gymnasium_env.envs:ToyEnv",
 )
+
+register(
+    id="gymnasium_env/random_walk",
+    entry_point="gymnasium_env.envs:RandomWalk",
+)

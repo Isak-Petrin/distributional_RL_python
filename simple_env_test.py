@@ -3,13 +3,13 @@ from qrtd_lambda import QRTDlAgent
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-step = 1000
-gamma = 1
-alpha = 0.1
+step = 10000
+gamma = 0.95
+alpha = 0.05
 length = 8
-bootstrap = True
+bootstrap = False
 s = np.random.normal(size=step) * gamma**(length-1)
-m = 3
+m = 10
 taus = [(2*i - 1) / (2*m) for i in range(1,m+1)]
 emp = [np.quantile(s, tau) for tau in taus]
 

@@ -6,12 +6,12 @@ import gymnasium as gym
 import sys
 import gymnasium_env
 
-episodes = 100000
+episodes = 5000
 gamma = 0.95
-alpha = 0.2
-length = 4
+alpha = 0.1
+length = 8
 bootstrap = False
-x0 = 0
+x0 = 4
 m = 10
 
 agent1 = QRTDlAgent(m = m,obs_space=length,l = .2 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
@@ -28,7 +28,7 @@ vs = {agent: [] for agent in agents}
 for episode in tqdm(range(episodes)):
     obs, _ = env.reset()
     for agent in agents:
-        vs[agent].append(agent.q[1].mean())
+        vs[agent].append(agent.q[4].mean())
         agent.reset(x0 = obs)
         
     done = False

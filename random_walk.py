@@ -6,21 +6,22 @@ import gymnasium as gym
 import sys
 import gymnasium_env
 
-episodes = 5000
+episodes = 1000
 gamma = 0.95
-alpha = 0.1
+alpha = 0.2
 length = 8
 bootstrap = False
-x0 = 4
-m = 10
+x0 = 2
+m = 15
+kappa = 2
 
-agent1 = QRTDlAgent(m = m,obs_space=length,l = .2 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
-agent2 = QRTDlAgent(m = m,obs_space=length,l = .4 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
-agent3 = QRTDlAgent(m = m,obs_space=length,l = .5 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
-agent4 = QRTDlAgent(m = m,obs_space=length,l = .6 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
-agent5 = QRTDlAgent(m = m,obs_space=length,l = .8 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
+agent1 = QRTDlAgent(m = m,obs_space=length,l = .1 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap, kappa = kappa)
+agent2 = QRTDlAgent(m = m,obs_space=length,l = .3 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap, kappa = kappa)
+agent3 = QRTDlAgent(m = m,obs_space=length,l = .4 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap, kappa = kappa)
+agent4 = QRTDlAgent(m = m,obs_space=length,l = .6 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap, kappa = kappa)
+agent5 = QRTDlAgent(m = m,obs_space=length,l = .8 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap, kappa = kappa)
 
-agents = [agent1,agent2,agent3,agent4,agent5]
+agents = [agent1,agent4]
 
 env = gym.make("gymnasium_env/random_walk")
 vs = {agent: [] for agent in agents}

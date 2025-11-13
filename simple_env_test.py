@@ -6,10 +6,10 @@ from tqdm import tqdm
 step = 10000
 gamma = 0.95
 alpha = 0.05
-length = 8
+length = 5
 bootstrap = False
 s = np.random.normal(size=step) * gamma**(length-1)
-m = 10
+m = 20
 taus = [(2*i - 1) / (2*m) for i in range(1,m+1)]
 emp = [np.quantile(s, tau) for tau in taus]
 
@@ -22,7 +22,7 @@ agent4 = QRTDlAgent(m = m,obs_space=length,l = .6 ,gamma = gamma, alpha = alpha,
 agent5 = QRTDlAgent(m = m,obs_space=length,l = .8 ,gamma = gamma, alpha = alpha, x0 = x0, bootstrap=bootstrap)
 
 
-agent_lst = [agent1,agent2,agent3,agent4,agent5]
+agent_lst = [agent1,agent5]
 
 loss_lst = {agent: [] for agent in agent_lst}
 mean_lst = {agent: [] for agent in agent_lst}

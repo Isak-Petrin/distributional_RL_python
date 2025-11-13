@@ -12,10 +12,13 @@ for _ in range(n_episodes):
     done = False
     # if you want the value *starting from a specific state*, you may need to
     # reset the env into that state or only record episodes that start there
+    i = 0
+    gamma = 0.95
     while not done:
         action = np.random.randint(2)  # same random policy as training
         obs, r, done, truncated, _ = env.step(action)
-        G += r
+        G += r * gamma**i
+        i+= 1
     returns.append(G)
 
 print("Empirical mean return:", np.mean(returns))

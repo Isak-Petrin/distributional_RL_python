@@ -12,7 +12,7 @@ class RandomWalk(gym.Env):
         self,     
         param: dict | None = None,
       ):
-        self.l = 8
+        self.l = 5
         self.start = self.l // 2
         self.observation_space = gym.spaces.Discrete(self.l)
         self.action_space = gym.spaces.Discrete(2)
@@ -32,7 +32,7 @@ class RandomWalk(gym.Env):
     def step(self, action: int):
         
         self.done = False
-        self.reward = -1
+        self.reward = -0.1
         
         if action:
             self.state += 1

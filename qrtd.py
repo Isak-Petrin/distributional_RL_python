@@ -16,13 +16,17 @@ class quantile:
         self.theta += diff
     
 class env_q:
-    def __init__(self, m: int, action_space: int, gamma: float, alpha: float):
+    def __init__(self, m: int, obs_space: int, gamma: float, alpha: float):
         self.m = m
-        self.q = {x: quantile(m = self.m) for x in range(action_space)}
+        self.q = {x: quantile(m = self.m) for x in range(obs_space)}
         self.tau = np.asarray([(2*i - 1) / (2*self.m) for i in range(1,self.m+1)])
         self.gamma = gamma
         self.alpha0 = alpha
+        self.l = "qrtd"
         self.t = 1
+    
+    def reset(self, x0):
+        return
     
     def get_q(self, x):
         return self.q[x]
@@ -44,7 +48,7 @@ class env_q:
         theta = np.maximum.accumulate(theta)
         self.q[x].set_theta(theta)
     
-    def update_q(self, x, x_n, r, done):
+    def update(self, x, x_n, r, done):
         theta_x = self.get_theta(x=x)
         theta_xn = self.get_theta(x = x_n)
         grad = np.zeros(self.m)
@@ -56,18 +60,18 @@ class env_q:
                     g = r
                 else:
                     g = r + self.gamma * theta_xn[j]
-                grad[i] += (alpha / self.m) * (self.tau[i] - (g < theta_x[i]))
+                grad[i] += (self.alpha0 / self.m) * (self.tau[i] - (g < theta_x[i]))
         
         self.add_diff(x = x, diff = grad)
         self.project_monotone(x)
         self.t += 1
     
-
+"""
 loss_history = []
 step = 8000
 r = np.random.normal(size = step)
 
-q = env_q(m = 10, action_space=2, gamma=1, alpha=0.01)
+q = env_q(m = 10, obs_space=2, gamma=1, alpha=0.01)
 
 # true target quantiles of N(0,1) at the tau levels
 tau_vals = q.get_tau()
@@ -98,3 +102,4 @@ plt.show()
 
 print(q.get_theta(x=0))
 print(true_q)
+"""

@@ -6,7 +6,7 @@ from scipy.signal import savgol_filter
 class quantile:
     def __init__(self, m: int):
         self.m = m
-        self.theta = np.linspace(0.5,1.5,self.m)
+        self.theta = np.linspace(-2,2,self.m)
     
     def get_theta(self):
         return self.theta
@@ -63,6 +63,7 @@ class QRTDlAgent:
         self.alpha0 = alpha
         self.episode = 0
         self.kappa = kappa
+        self.name = ""
         
     def reset(self,x0):
         self.t = 0
@@ -70,6 +71,8 @@ class QRTDlAgent:
         self.container.reset(x0)
     def get_mean(self,x):
         return self.q[x].mean()
+    def get_xs(self):
+        return self.container.get_xs()
     
     def get_ds(self,t):
         return self.container.get_d(t)
@@ -81,12 +84,12 @@ class QRTDlAgent:
         return x,self.q[x].get_theta()
     
     def _huber_grad(self, u):
-        k = float(self.kappa)  # ensure numeric
+        k = float(self.kappa)  
         return np.where(np.abs(u) <= k, u / k, np.sign(u))
     
 
     def get_alpha(self, x, trc):
-        # either do not mutate N here...
+
         eff_visits = self.N[x] + trc
         alpha_x = self.alpha0 / ((1.0 + eff_visits) ** 0.8)
         return max(alpha_x, 1e-4)
@@ -109,30 +112,35 @@ class QRTDlAgent:
     def store(self,x,r, done):
         self.container.add((x,r,done))
     
-    def update(self, x, r, done: bool):
+    def update(self, x, x_n, r, done: bool):
+        x = x_n
         self.t += 1
+       
         self.store(x, r, done)
 
         for i in range(self.t):
             h = self.t - i
-            target = self.get_target(t=i, h=h)          # scalar if bootstrap else vector (len m)
-            x_i, theta = self.get_xt(t=i)               # theta shape: (m,)
+            target = self.get_target(t=i, h=h)          
+            x_i, theta = self.get_xt(t=i)               
+            xs = self.get_xs()
+            #if xs.count(x_i) >= 2:
+            #    if i != (len(xs)-1 -xs[::-1].index(x_i)):
+            #        continue
             trc   = self.trace(s=h)
             alpha = self.get_alpha(x=x_i, trc=trc)
 
             if self.bootstrap:
-                # target is scalar -> deltas per quantile
-                delta = target - theta                  # shape: (m,)
+
+                delta = target - theta                  
                 weight = np.abs(self.tau - (delta < 0).astype(float))  # |tau - 1{delta<0}|
-                g = weight * self._huber_grad(delta)    # elementwise
-                grad = alpha * trc * g                  # optional: / self.m for stability
+                g = weight * self._huber_grad(delta)    
+                grad = alpha * trc * g                 
             else:
                 delta = target[None, :] - theta[:, None]                       # (m, m)
                 weight = np.abs(self.tau[:, None] - (delta < 0).astype(float)) # (m, m)
                 g = weight * self._huber_grad(delta)                           # (m, m)
-                grad = self.alpha0 * trc * g.mean(axis=1)                          # average over j -> (m,)
-
-            self.add_diff(x=x_i, diff=grad)
+                grad = self.alpha0 * trc * g.mean(axis=1)                          
+            self.add_diff(x=x_i, diff= grad)
 
         
     def get_target(self, t,h):
